@@ -1,0 +1,244 @@
+```yaml
+openapi: 3.0.3
+info:
+  title: User Registration API
+  description: API for user registration and related functionalities.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+    description: Production server
+tags:
+  - name: Registration
+    description: User registration and validation endpoints
+paths:
+  /api/v1/register:
+    post:
+      tags:
+        - Registration
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - confirmPassword
+                - agreeToTerms
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                confirmPassword:
+                  type: string
+                  description: Must match password
+                agreeToTerms:
+                  type: boolean
+                  const: true
+                promotionalEmails:
+                  type: boolean
+                  nullable: true
+                thirdPartySharing:
+                  type: boolean
+                  nullable: true
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                      promotionalEmails:
+                        type: boolean
+                      thirdPartySharing:
+                        type: boolean
+        '400':
+          description: Bad request due to validation failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error details
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error details
+
+  /api/v1/register/validation:
+    get:
+      tags:
+        - Registration
+      summary: Validate email and phone number
+      parameters:
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+            format: email
+        - name: phoneNumber
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request due to validation failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error details
+
+  /api/v1/register/socialmedia:
+    post:
+      tags:
+        - Registration
+      summary: Register user using social media account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - socialMedia
+                - socialMediaToken
+              properties:
+                socialMedia:
+                  type: string
+                  enum:
+                    - facebook
+                    - google
+                    - twitter
+                socialMediaToken:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+        '400':
+          description: Bad request due to validation failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error details
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error details
+
+  /api/v1/register/forgotpassword:
+    post:
+      tags:
+        - Registration
+      summary: Recover password for registered user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Email exists and recovery instructions sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request if email does not exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error details
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error details
+
+security:
+  - apiKey: []
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+
+```
