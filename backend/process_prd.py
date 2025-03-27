@@ -1,65 +1,81 @@
 import os
-import openai
 import fitz  # PyMuPDF for PDF parsing
-from crew import prd_processing_crew, validation_crew
-from agents import swagger_generator_agent, validation_agent
+from crew import SwaggerCrew
 
 OUTPUT_DIR = "backend/output/"
-
 os.makedirs(OUTPUT_DIR, exist_ok=True)  # Ensure output directory exists
 
 def extract_text_from_pdf(pdf_path):
-    """Extract readable text from a PDF file."""
-    doc = fitz.open(pdf_path)
-    text = "\n".join([page.get_text("text") for page in doc])
-    return text
+    """Extract text from a PDF."""
+    try:
+        doc = fitz.open(pdf_path)
+        return "\n".join([page.get_text("text") for page in doc])
+    except Exception as e:
+        print(f"❌ Error reading PDF: {e}")
+        return ""
+
+def extract_text_from_md(md_path):
+    """Extract text from Markdown."""
+    try:
+        with open(md_path, "r", encoding="utf-8") as file:
+            return file.read()
+    except Exception as e:
+        print(f"❌ Error reading Markdown file: {e}")
+        return ""
 
 def extract_text_from_file(file_path):
-    """Extract text from various document types (PDF, TXT, etc.)."""
-    file_extension = os.path.splitext(file_path)[1].lower()
-
-    if file_extension == ".pdf":
-        return extract_text_from_pdf(file_path)
+    """Extract text from PRD (Markdown or PDF)."""
+    print(file_path)
+    ext = os.path.splitext(file_path)[1].lower()
+    print(ext)
+    extractors = {".pdf": extract_text_from_pdf, ".md": extract_text_from_md}
+    
+    if ext in extractors:
+        text = extractors[ext](file_path)
+        if not text.strip():
+            print(f"⚠️ Warning: Extracted text from {file_path} is empty!")
+        return text
     else:
-        raise ValueError(f"Unsupported file format: {file_extension}")
+        raise ValueError(f"❌ Unsupported file format: {ext}")
 
 def generate_swagger_from_prd(file_path):
-    """Reads a PRD file, processes it, and generates Swagger YAML."""
-    file_extension = os.path.splitext(file_path)[1].lower()
-
-    # Step 1: Extract Text from PRD file
+    """Processes PRD and generates Swagger YAML."""
     extracted_text = extract_text_from_file(file_path)
-    print(f"Extracted text: {extracted_text[:1000]}...")  # Print first 1000 characters for debugging
+    print(f"Extracted text: {extracted_text}...")  
 
-    # Step 2: Pass the extracted text to swagger_generator_agent for Swagger generation
-    swagger_generator_agent.goal = f"Generate a detailed Swagger file from the extracted PRD features. Here is the PRD text:\n\n{extracted_text}"
-
-    # Step 3: Generate Swagger YAML
-    swagger_yaml = prd_processing_crew.kickoff({})
-
-    # Step 4: Get the Swagger YAML from the output of the crew
-    swagger_yaml = str(swagger_yaml.result) if hasattr(swagger_yaml, "result") else str(swagger_yaml)
-
-    if not swagger_yaml.strip():
-        print("❌ OpenAI response is empty or invalid!")
+    # Initialize SwaggerCrew
+    swagger_crew = SwaggerCrew()
+    prd_processing_crew = swagger_crew.create_prd_processing_crew(extracted_text)
+    
+    try:
+        swagger_yaml = prd_processing_crew.kickoff()  # ✅ Extract API data
+    except TypeError as e:
+        print(f"❌ Error generating Swagger YAML: {e}")
         return None
+    
+    if hasattr(swagger_yaml, 'result'):
+        swagger_yaml = swagger_yaml.result  
+    else:
+        swagger_yaml = str(swagger_yaml)
 
-    # Step 5: Validate the Swagger YAML using the validation agent
-    validation_result = validation_crew.kickoff({"swagger_yaml": swagger_yaml})  # Validation task
-
-    print(f"Validation Result: {validation_result}")
+    # ✅ Validate Swagger YAML
+    validation_crew = swagger_crew.create_validation_crew(swagger_yaml)
+    try:
+        validation_result = validation_crew.kickoff()  
+    except TypeError as e:
+        print(f"❌ Error validating Swagger YAML: {e}")
+        return None
 
     if hasattr(validation_result, "is_valid") and not validation_result.is_valid:
         print(f"❌ Validation failed: {validation_result.errors}")
         return None
 
-    # Step 6: Write Swagger YAML to output file
+    # ✅ Save to output file
     output_file = os.path.join(OUTPUT_DIR, "swagger_api.yaml")
-    
     try:
         with open(output_file, "w", encoding="utf-8") as file:
             file.write(swagger_yaml)
-        print(f"✅ Swagger file successfully written to {output_file}")
+        print(f"✅ Swagger file saved: {output_file}")
     except Exception as e:
         print(f"❌ Failed to write Swagger file: {e}")
 

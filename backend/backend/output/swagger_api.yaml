@@ -1,54 +1,53 @@
 ```yaml
-openapi: 3.0.3
+openapi: 3.0.0
 info:
   title: User Registration API
-  description: API for user registration and related functionalities.
   version: 1.0.0
+  description: API for user registration including email, password, and social media integrations.
 servers:
-  - url: https://api.example.com
-    description: Production server
-tags:
-  - name: Registration
-    description: User registration and validation endpoints
+  - url: https://api.example.com/v1
+    description: Main production server
 paths:
-  /api/v1/register:
+  /register:
     post:
-      tags:
-        - Registration
       summary: Register a new user
+      operationId: registerUser
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: mySecurePassword
+                confirmPassword:
+                  type: string
+                  description: Must match the password
+                  example: mySecurePassword
+                agreeToTerms:
+                  type: boolean
+                  example: true
+                promotionalEmails:
+                  type: boolean
+                  example: false
+                thirdPartySharing:
+                  type: boolean
+                  example: false
               required:
                 - email
                 - password
                 - confirmPassword
                 - agreeToTerms
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  minLength: 8
-                confirmPassword:
-                  type: string
-                  description: Must match password
-                agreeToTerms:
-                  type: boolean
-                  const: true
-                promotionalEmails:
-                  type: boolean
-                  nullable: true
-                thirdPartySharing:
-                  type: boolean
-                  nullable: true
       responses:
         '201':
-          description: User registered successfully
+          description: User successfully registered
           content:
             application/json:
               schema:
@@ -56,17 +55,18 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: User registered successfully.
                   user:
                     type: object
                     properties:
                       email:
                         type: string
-                      promotionalEmails:
-                        type: boolean
-                      thirdPartySharing:
-                        type: boolean
+                        example: user@example.com
+                      id:
+                        type: string
+                        example: 123e4567-e89b-12d3-a456-426614174000
         '400':
-          description: Bad request due to validation failure
+          description: Validation failed
           content:
             application/json:
               schema:
@@ -74,35 +74,30 @@ paths:
                 properties:
                   error:
                     type: string
-                    description: Error details
+                    example: Passwords must match.
         '500':
           description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Error details
 
-  /api/v1/register/validation:
+  /register/validation:
     get:
-      tags:
-        - Registration
       summary: Validate email and phone number
+      operationId: validateRegistrationFields
       parameters:
         - name: email
           in: query
           required: false
+          description: Email to validate
           schema:
             type: string
             format: email
+            example: user@example.com
         - name: phoneNumber
           in: query
           required: false
+          description: Phone number to validate
           schema:
             type: string
+            example: '+14155552671'
       responses:
         '200':
           description: Validation successful
@@ -113,8 +108,9 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Email is valid.
         '400':
-          description: Bad request due to validation failure
+          description: Validation failed
           content:
             application/json:
               schema:
@@ -122,34 +118,32 @@ paths:
                 properties:
                   error:
                     type: string
-                    description: Error details
+                    example: Invalid email format.
 
-  /api/v1/register/socialmedia:
+  /register/socialmedia:
     post:
-      tags:
-        - Registration
-      summary: Register user using social media account
+      summary: Register a user with social media
+      operationId: registerUserSocialMedia
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - socialMedia
-                - socialMediaToken
               properties:
                 socialMedia:
                   type: string
-                  enum:
-                    - facebook
-                    - google
-                    - twitter
+                  enum: [facebook, google, twitter]
+                  example: google
                 socialMediaToken:
                   type: string
+                  example: token1234567890
+              required:
+                - socialMedia
+                - socialMediaToken
       responses:
         '201':
-          description: User registered successfully
+          description: User successfully registered via social media
           content:
             application/json:
               schema:
@@ -157,13 +151,18 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: User registered successfully with social media.
                   user:
                     type: object
                     properties:
                       email:
                         type: string
+                        example: user@example.com
+                      id:
+                        type: string
+                        example: 123e4567-e89b-12d3-a456-426614174000
         '400':
-          description: Bad request due to validation failure
+          description: Validation failed
           content:
             application/json:
               schema:
@@ -171,38 +170,30 @@ paths:
                 properties:
                   error:
                     type: string
-                    description: Error details
+                    example: Invalid social media token.
         '500':
           description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Error details
 
-  /api/v1/register/forgotpassword:
+  /register/forgotpassword:
     post:
-      tags:
-        - Registration
-      summary: Recover password for registered user
+      summary: Recover user password
+      operationId: recoverPassword
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - email
               properties:
                 email:
                   type: string
                   format: email
+                  example: user@example.com
+              required:
+                - email
       responses:
         '200':
-          description: Email exists and recovery instructions sent
+          description: Password recovery instructions sent
           content:
             application/json:
               schema:
@@ -210,8 +201,9 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Instructions to reset your password have been sent to your email.
         '400':
-          description: Bad request if email does not exist
+          description: Email does not exist
           content:
             application/json:
               schema:
@@ -219,26 +211,31 @@ paths:
                 properties:
                   error:
                     type: string
-                    description: Error details
+                    example: Email is not registered in the system.
         '500':
           description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Error details
-
-security:
-  - apiKey: []
 
 components:
   securitySchemes:
-    apiKey:
+    ApiKeyAuth:
       type: apiKey
-      name: Authorization
       in: header
-
+      name: Authorization
+  schemas:
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid input provided.
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+        email:
+          type: string
+          example: user@example.com
 ```
+This complete OpenAPI 3.0 YAML specification describes the user registration API with endpoints for user registration, field validation, social media registration, and password recovery. It includes detailed request and response schemas, as well as responses for different HTTP status codes. The specification adheres to security standards and provides clear documentation for implementation and testing.
