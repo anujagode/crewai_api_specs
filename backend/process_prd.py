@@ -22,6 +22,13 @@ def extract_text_from_md(md_path):
     except Exception as e:
         print(f"❌ Error reading Markdown file: {e}")
         return ""
+    
+def get_last_n_words(text, n=4000):
+    """Returns the last n words from the given text."""
+    words = text.split()
+    last_n_words = words[-n:]
+    return ' '.join(last_n_words)
+
 
 def extract_text_from_file(file_path):
     """Extract text from PRD (Markdown or PDF)."""
@@ -34,7 +41,7 @@ def extract_text_from_file(file_path):
         text = extractors[ext](file_path)
         if not text.strip():
             print(f"⚠️ Warning: Extracted text from {file_path} is empty!")
-        return text
+        return get_last_n_words(text, 4000)
     else:
         raise ValueError(f"❌ Unsupported file format: {ext}")
 
