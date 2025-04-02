@@ -1,13 +1,8 @@
-from flask import Flask, request, jsonify
-import shutil
+from flask import Flask, jsonify
 import os
-from flask_cors import CORS
-from werkzeug.utils import secure_filename
 from process_prd import generate_swagger_from_prd
 
 app = Flask(__name__)
-
-CORS(app)
 
 UPLOAD_DIR = "backend/uploads/"
 OUTPUT_DIR = "backend/output/"
@@ -22,16 +17,14 @@ class PRDProcessing:
             "swagger_path": None
         }
 
-    def upload_prd(self, file):
-        print("\n📦 Uploading PRD File...")
+    def load_sample_file(self):
+        print("\n📦 Loading Sample PRD File...")
 
-        filename = secure_filename(file.filename)  # Secure the file name
-        file_path = os.path.join(UPLOAD_DIR, filename)
+        file_path = os.path.join(UPLOAD_DIR, "Sample_Specs.md")
         
-        # Save uploaded file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.stream, buffer)
-        
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"❌ Sample file not found: {file_path}")
+
         self.state["file_path"] = file_path
 
     def process_prd(self):
@@ -46,8 +39,8 @@ class PRDProcessing:
             print(f"Error processing PRD: {e}")
             return jsonify({"error": "Failed to process PRD"}), 500
 
-    def handle_upload(self, file):
-        self.upload_prd(file)
+    def handle_upload(self):
+        self.load_sample_file()
         self.process_prd()
 
         if not self.state["swagger_path"]:
@@ -55,19 +48,8 @@ class PRDProcessing:
 
         return jsonify({"message": "Swagger API file generated successfully", "swagger_file": self.state["swagger_path"]})
 
-@app.route('/upload/', methods=['POST'])
-def upload_prd():
-    try:
-        file = request.files.get('file')
-        if not file:
-            return jsonify({"error": "No file provided"}), 400
-
-        prd_processor = PRDProcessing()
-        response = prd_processor.handle_upload(file)
-        return response
-    except Exception as e:
-        print(f"Server Error: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    with app.app_context():
+        prd_processor = PRDProcessing()
+        response = prd_processor.handle_upload()
+        print(response.get_data(as_text=True))
