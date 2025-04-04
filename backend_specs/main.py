@@ -5,8 +5,8 @@ from process_prd import generate_swagger_from_prd
 
 app = Flask(__name__)
 
-UPLOAD_DIR = "backend/uploads/"
-OUTPUT_DIR = "backend/output/"
+UPLOAD_DIR = "uploads/"
+OUTPUT_DIR = "output/"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)

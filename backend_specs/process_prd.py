@@ -2,7 +2,7 @@ import os
 import fitz  # PyMuPDF for PDF parsing
 from crew import SwaggerCrew
 
-OUTPUT_DIR = "backend/output/"
+OUTPUT_DIR = "output/"
 os.makedirs(OUTPUT_DIR, exist_ok=True)  # Ensure output directory exists
 
 def extract_text_from_pdf(pdf_path):
@@ -41,7 +41,7 @@ def extract_text_from_file(file_path):
         text = extractors[ext](file_path)
         if not text.strip():
             print(f"⚠️ Warning: Extracted text from {file_path} is empty!")
-        return get_last_n_words(text, 4000)
+        return text
     else:
         raise ValueError(f"❌ Unsupported file format: {ext}")
 
