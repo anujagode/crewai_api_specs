@@ -20,6 +20,7 @@ def validation_agent(swagger_yaml):
         ),
         model="gpt-4-turbo",  # Can use GPT-3.5 or GPT-4 models for validation tasks
         api_key=OPENAI_API_KEY,
+        temperature=0.2,
         verbose=True,
         context=swagger_yaml,
         constraints=[

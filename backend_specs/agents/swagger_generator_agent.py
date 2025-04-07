@@ -40,6 +40,7 @@ def swagger_generator_agent(extracted_text):
         ),
         model="gpt-4-turbo",
         api_key=OPENAI_API_KEY,
+        temperature=0.2,
         verbose=True,
         context=extracted_text,  # ✅ Pass PRD text dynamically!
         constraints=[
