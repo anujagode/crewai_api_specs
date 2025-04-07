@@ -5,10 +5,8 @@ from process_prd import generate_swagger_from_prd
 
 app = Flask(__name__)
 
-UPLOAD_DIR = "backend_specs/uploads/"
-OUTPUT_DIR = "backend_specs/output/"
+OUTPUT_DIR = "C:/Users/lenovo/Desktop/prd_to_apiSpec/backend_specs/output/"
 
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 class PRDProcessing:
