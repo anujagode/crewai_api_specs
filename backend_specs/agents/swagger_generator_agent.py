@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 # Load OpenAI API key from .env file
-load_dotenv()  # Load the API key from a .env file
+load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
@@ -12,48 +12,69 @@ openai.api_key = OPENAI_API_KEY
 def swagger_generator_agent(extracted_text):
     """Create the Swagger Generator Agent with PRD text input."""
     prompt = f"""
-    Based on the following extracted PRD text, generate a comprehensive OpenAPI 3.0.3 Swagger specification:
+You are an expert in designing OpenAPI 3.0.3 specifications. 
 
-    --- EXTRACTED PRD TEXT ---
-    {extracted_text}
-    --- END OF EXTRACTED PRD TEXT ---
+Your task is to read the PRD and generate a complete Swagger YAML (OpenAPI 3.0.3) document.
 
-    Your task is to:
-    1. Analyze the PRD thoroughly and extract API features.
-    2. Identify API endpoints, HTTP methods (GET, POST, PUT, DELETE), request/response schemas, and error handling.
-    3. Ensure the Swagger YAML follows best practices, including metadata, security schemes, and response examples.
+--- PRD CONTENT START ---
+{extracted_text}
+--- PRD CONTENT END ---
 
-    The Swagger YAML specification should:
-    - Include metadata like API title, version, description, and servers.
-    - Define all relevant API paths and methods with proper parameters and responses.
-    - Include security mechanisms such as OAuth2, API Keys, or JWT authentication if mentioned.
-    - Be fully validated according to OpenAPI 3.0.3 standards.
+Based on the PRD content above:
+
+Generate a production-ready OpenAPI 3.0.3 YAML that includes:
+
+1. **API Metadata**:
+   - Title, version, description, and server URL
+
+2. **Paths and Methods**:
+   - Include all mentioned API endpoints
+   - Define supported HTTP methods (GET, POST, PUT, DELETE)
+   - Each method should include:
+     - Summary and description
+     - Parameters (query/path/header if any)
+     - Request body (if applicable)
+     - Responses (200, 400, 404, 500)
+     - Examples where appropriate
+
+3. **Components**:
+   - Define reusable schemas for request/response bodies
+   - Include error response schemas if applicable
+
+4. **Security**:
+   - Add JWT, OAuth2, or API Key auth if mentioned in PRD
+   - Define security schemes in `components.securitySchemes`
+   - Apply them at the global or endpoint level
+
+5. **Validation**:
+   - Ensure the YAML is valid OpenAPI 3.0.3
+   - Use proper indentation and structure
+   - Avoid extra explanation or comments — return only YAML
+
+Format strictly as a clean OpenAPI YAML file — no prose or extra instructions.
     """
+
     return Agent(
         name="Swagger Generator",
         role="Expert API Architect & OpenAPI 3.0.3 Specialist",
-        goal="Extract API features from the PRD and generate a comprehensive OpenAPI 3.0.3 Swagger specification.",
+        goal="Generate a clean, structured OpenAPI 3.0.3 Swagger YAML specification from PRD input.",
         backstory=(
-            "A highly experienced API architect specializing in OpenAPI 3.0.3 specifications. "
-            "With extensive knowledge in RESTful API design, authentication methods, and API documentation standards, "
-            "this expert transforms complex PRD documents into well-structured, production-ready Swagger specifications."
+            "A highly skilled API architect with deep knowledge of RESTful APIs and OpenAPI specifications. "
+            "They convert vague product requirements into production-ready Swagger YAML documentation "
+            "that adheres to OpenAPI 3.0.3 best practices, including reusable components, security, and examples."
         ),
         model="gpt-4-turbo",
         api_key=OPENAI_API_KEY,
         temperature=0.2,
         verbose=True,
-        context=extracted_text,  # ✅ Pass PRD text dynamically!
+        context=prompt,
         constraints=[
-            "Analyze the PRD thoroughly before generating Swagger YAML.",
-            "Dynamically extract API endpoints, HTTP methods (GET, POST, PUT, DELETE), and request/response schemas.",
-            "Ensure the OpenAPI 3.0.3 YAML follows best practices, including metadata, security schemes, and error handling.",
-            "Each endpoint must include correct parameters, request bodies, responses, and applicable HTTP status codes.",
-            "Generate reusable data models in the `components` section of the Swagger YAML.",
-            "Include security mechanisms such as OAuth2, API Keys, or JWT authentication if mentioned in the PRD.",
-            "Ensure comprehensive API documentation with examples, parameter descriptions, and status codes.",
-            "Validate that all endpoints adhere to RESTful best practices.",
-            "Check for versioning and include a `servers` section with a versioned API base URL.",
-            "Include response schemas for 200 (success), 400 (bad request), 404 (not found), and 500 (server error)."
+            "Return only valid OpenAPI 3.0.3 YAML, nothing else.",
+            "Ensure paths, methods, components, and security are well-structured.",
+            "Use proper indentation and spacing for YAML validity.",
+            "All responses must include proper status codes and schema references.",
+            "Add security definitions if mentioned in the PRD.",
+            "Avoid generic boilerplate — derive all details from PRD.",
         ],
-        expected_output="A structured OpenAPI 3.0.3 YAML specification reflecting the PRD details, including endpoints, authentication, and error handling."
+        expected_output="A fully structured and validated OpenAPI 3.0.3 YAML file based on PRD content."
     )
