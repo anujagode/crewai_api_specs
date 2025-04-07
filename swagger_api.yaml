@@ -1,0 +1,71 @@
+```yaml
+openapi: 3.0.3
+info:
+  title: User Registration API
+  description: API for user registration and management.
+  version: 1.0.0
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterUserResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    RegisterUserRequest:
+      type: object
+      required:
+        - username
+        - password
+        - email
+      properties:
+        username:
+          type: string
+          example: johndoe123
+        password:
+          type: string
+          example: P@ssw0rd!
+        email:
+          type: string
+          format: email
+          example: johndoe@example.com
+        dateOfBirth:
+          type: integer
+          example: 19900515
+    RegisterUserResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Registration successful"
+        userId:
+          type: string
+          example: "123abc"
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid email format"
+        details:
+          type: string
+          example: "Email must be a valid email address"
+```
