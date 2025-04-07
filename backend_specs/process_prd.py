@@ -2,8 +2,7 @@ import os
 import fitz  # PyMuPDF for PDF parsing
 from crew import SwaggerCrew
 
-OUTPUT_DIR = "C:/Users/lenovo/Desktop/prd_to_apiSpec/backend_specs/output/"
-os.makedirs(OUTPUT_DIR, exist_ok=True)  # Ensure output directory exists
+OUTPUT_DIR = OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from a PDF."""

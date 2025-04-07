@@ -5,9 +5,7 @@ from process_prd import generate_swagger_from_prd
 
 app = Flask(__name__)
 
-OUTPUT_DIR = "C:/Users/lenovo/Desktop/prd_to_apiSpec/backend_specs/output/"
-
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class PRDProcessing:
     def __init__(self, prd_file_path):
