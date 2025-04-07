@@ -33,6 +33,6 @@ def generate_swagger_task(agent, extracted_text):
         - Complete OpenAPI 3.0.3 specification for the product API.
         - Valid endpoint definitions, including HTTP methods and parameters.
         - Request and response schemas with example data.
-        - Security and authentication details (OAuth, API Key, etc.).
+        - Do not add security and authentication details (OAuth, API Key, etc.).
         """
     )

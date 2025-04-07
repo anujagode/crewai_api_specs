@@ -41,12 +41,7 @@ Generate a production-ready OpenAPI 3.0.3 YAML that includes:
    - Define reusable schemas for request/response bodies
    - Include error response schemas if applicable
 
-4. **Security**:
-   - Add JWT, OAuth2, or API Key auth if mentioned in PRD
-   - Define security schemes in `components.securitySchemes`
-   - Apply them at the global or endpoint level
-
-5. **Validation**:
+4. **Validation**:
    - Ensure the YAML is valid OpenAPI 3.0.3
    - Use proper indentation and structure
    - Avoid extra explanation or comments — return only YAML
@@ -61,7 +56,7 @@ Format strictly as a clean OpenAPI YAML file — no prose or extra instructions.
         backstory=(
             "A highly skilled API architect with deep knowledge of RESTful APIs and OpenAPI specifications. "
             "They convert vague product requirements into production-ready Swagger YAML documentation "
-            "that adheres to OpenAPI 3.0.3 best practices, including reusable components, security, and examples."
+            "that adheres to OpenAPI 3.0.3 best practices, including reusable components and examples."
         ),
         model="gpt-4-turbo",
         api_key=OPENAI_API_KEY,
@@ -70,10 +65,10 @@ Format strictly as a clean OpenAPI YAML file — no prose or extra instructions.
         context=prompt,
         constraints=[
             "Return only valid OpenAPI 3.0.3 YAML, nothing else.",
-            "Ensure paths, methods, components, and security are well-structured.",
+            "Ensure paths, methods, and components are well-structured.",
             "Use proper indentation and spacing for YAML validity.",
             "All responses must include proper status codes and schema references.",
-            "Add security definitions if mentioned in the PRD.",
+            "Do not add security definitions.",
             "Avoid generic boilerplate — derive all details from PRD.",
         ],
         expected_output="A fully structured and validated OpenAPI 3.0.3 YAML file based on PRD content."
