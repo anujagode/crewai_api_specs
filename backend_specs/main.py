@@ -1,64 +1,75 @@
+#!/usr/bin/env python
 from flask import Flask, request, jsonify
+from crewai.flow import Flow, start, listen
+from pydantic import BaseModel
+from typing import Optional
 import os
 import sys
+
 from process_prd import generate_swagger_from_prd
 
+# ---------- CrewAI Flow State ----------
+class SwaggerState(BaseModel):
+    prd_file_path: Optional[str] = None
+    swagger_file_path: Optional[str] = None
+
+
+# ---------- CrewAI Swagger Flow ----------
+class SwaggerFlow(Flow[SwaggerState]):
+
+    @start()
+    def load_prd_file(self):
+        print(f"\n📄 Checking PRD file: {self.state.prd_file_path}")
+        if not self.state.prd_file_path or not os.path.exists(self.state.prd_file_path):
+            raise FileNotFoundError(f"❌ PRD file not found: {self.state.prd_file_path}")
+
+    @listen(load_prd_file)
+    def generate_swagger(self):
+        print(f"\n🔧 Generating Swagger from PRD: {self.state.prd_file_path}")
+        try:
+            swagger_path = generate_swagger_from_prd(self.state.prd_file_path)
+            self.state.swagger_file_path = swagger_path
+            print(f"✅ Swagger file generated at: {swagger_path}")
+        except Exception as e:
+            print(f"❌ Failed to generate Swagger: {e}")
+            raise
+
+
+# ---------- CLI Entrypoint ----------
+def kickoff(prd_path: str):
+    flow = SwaggerFlow()
+    flow.state.prd_file_path = prd_path
+    flow.kickoff()
+
+
+# ---------- Optional Flask API ----------
 app = Flask(__name__)
 
-OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-class PRDProcessing:
-    def __init__(self, prd_file_path):
-        self.state = {
-            "file_path": prd_file_path,
-            "swagger_path": None
-        }
-
-    def process_prd(self):
-        """Processes the PRD file and generates Swagger API specifications."""
-        print(f"\n🔄 Processing PRD file: {self.state['file_path']}")
-
-        if not os.path.exists(self.state["file_path"]):
-            print(f"❌ Error: PRD file not found: {self.state['file_path']}")
-            return None
-
-        try:
-            swagger_path = generate_swagger_from_prd(self.state["file_path"])
-            self.state["swagger_path"] = swagger_path
-            print(f"\n✅ Swagger API file generated: {swagger_path}")
-            return swagger_path
-        except Exception as e:
-            print(f"❌ Error processing PRD: {e}")
-            return None
-
 @app.route('/process_prd', methods=['POST'])
-def process_uploaded_prd():
-    """API endpoint to process an uploaded PRD file."""
+def api_process_prd():
     data = request.json
-    prd_file_path = data.get("prd_file_path")
+    prd_file = data.get("prd_file_path")
 
-    if not prd_file_path or not os.path.exists(prd_file_path):
-        return jsonify({"error": "Invalid PRD file path!"}), 400
+    if not prd_file or not os.path.exists(prd_file):
+        return jsonify({"error": "Invalid or missing PRD file path"}), 400
 
-    processor = PRDProcessing(prd_file_path)
-    swagger_path = processor.process_prd()
+    try:
+        flow = SwaggerFlow()
+        flow.state.prd_file_path = prd_file
+        flow.kickoff()
+        return jsonify({
+            "message": "Swagger generated successfully",
+            "swagger_file": flow.state.swagger_file_path
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    if not swagger_path:
-        return jsonify({"error": "Swagger file generation failed"}), 500
 
-    return jsonify({"message": "Swagger API file generated successfully", "swagger_file": swagger_path})
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print("❌ Error: No PRD file provided!")
-        print("Usage: python3 main.py /path/to/prd_document.md")
-        sys.exit(1)
-
-    prd_file_path = sys.argv[1]
-    processor = PRDProcessing(prd_file_path)
-    swagger_path = processor.process_prd()
-
-    if swagger_path:
-        print(f"\n✅ Swagger API file generated successfully: {swagger_path}")
+# ---------- Run as Script or Server ----------
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        prd_file = sys.argv[1]
+        kickoff(prd_file)
     else:
-        print("❌ Swagger API file generation failed!")
+        print("📡 Starting Swagger Flask API server...")
+        app.run(port=5001)
