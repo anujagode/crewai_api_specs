@@ -1,0 +1,97 @@
+```yaml
+openapi: 3.0.3
+info:
+  title: User Registration API
+  description: API for user registration to ensure unique identification and secure access.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    UserRegistration:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Unique username to identify the user
+          example: johndoe123
+        password:
+          type: string
+          description: Secure password for the user account
+          example: Passw0rd!
+        email:
+          type: string
+          format: email
+          description: Valid email address for communication
+          example: johndoe@example.com
+        dateOfBirth:
+          type: string
+          format: date
+          description: Date of birth for user age verification
+          example: 1990-01-01
+        firstName:
+          type: string
+          description: User's first name (optional)
+          example: John
+        lastName:
+          type: string
+          description: User's last name (optional)
+          example: Doe
+        phoneNumber:
+          type: string
+          description: User's phone number (optional)
+          example: '+1234567890'
+    RegistrationResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: Unique identifier for the registered user
+          example: '60b8d7d201c81c001c0e74c2'
+        message:
+          type: string
+          description: Confirmation message upon successful registration
+          example: User registered successfully
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Error code
+          example: 400
+        message:
+          type: string
+          description: Detailed error message
+          example: Please enter a valid email.
+```
