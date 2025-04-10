@@ -7,7 +7,6 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
-
 def swagger_generator_agent(extracted_text):
     """Create the Swagger Generator Agent with PRD text input."""
     prompt = f"""
