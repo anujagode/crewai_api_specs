@@ -19,19 +19,19 @@ class SwaggerFlow(Flow[SwaggerState]):
 
     @start()
     def load_prd_file(self):
-        print(f"\n📄 Checking PRD file: {self.state.prd_file_path}")
+        print(f"\nChecking PRD file: {self.state.prd_file_path}")
         if not self.state.prd_file_path or not os.path.exists(self.state.prd_file_path):
-            raise FileNotFoundError(f"❌ PRD file not found: {self.state.prd_file_path}")
+            raise FileNotFoundError(f"PRD file not found: {self.state.prd_file_path}")
 
     @listen(load_prd_file)
     def generate_swagger(self):
-        print(f"\n🔧 Generating Swagger from PRD: {self.state.prd_file_path}")
+        print(f"\nGenerating Swagger from PRD: {self.state.prd_file_path}")
         try:
             swagger_path = generate_swagger_from_prd(self.state.prd_file_path)
             self.state.swagger_file_path = swagger_path
-            print(f"✅ Swagger file generated at: {swagger_path}")
+            print(f"Swagger file generated at: {swagger_path}")
         except Exception as e:
-            print(f"❌ Failed to generate Swagger: {e}")
+            print(f"Failed to generate Swagger: {e}")
             raise
 
 
@@ -71,5 +71,5 @@ if __name__ == "__main__":
         prd_file = sys.argv[1]
         kickoff(prd_file)
     else:
-        print("📡 Starting Swagger Flask API server...")
+        print("Starting Swagger Flask API server...")
         app.run(port=5001)

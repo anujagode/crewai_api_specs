@@ -3,8 +3,7 @@ import openai
 import os
 from dotenv import load_dotenv
 
-# Load OpenAI API key from .env file
-load_dotenv()  # Load the API key from a .env file
+load_dotenv()  
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
@@ -18,7 +17,7 @@ def validation_agent(swagger_yaml):
             "A highly skilled API architect with a deep understanding of OpenAPI 3.0 standards and API validation. "
             "Experienced in ensuring that API documentation meets all specifications and provides clear, consistent, and accurate information to developers and consumers."
         ),
-        model="gpt-4-turbo",  # Can use GPT-3.5 or GPT-4 models for validation tasks
+        model="gpt-4-turbo",  
         api_key=OPENAI_API_KEY,
         temperature=0.2,
         verbose=True,

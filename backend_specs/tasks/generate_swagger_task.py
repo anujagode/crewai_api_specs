@@ -2,7 +2,6 @@ from crewai import Task
 
 def generate_swagger_task(agent, extracted_text):
     """Create the task for generating Swagger YAML."""
-    # Format the description to include the actual extracted text dynamically
     description = f"""
     :pushpin: **Generate an OpenAPI 3.0.3 YAML specification from the following PRD:**
 
@@ -26,7 +25,7 @@ def generate_swagger_task(agent, extracted_text):
     """
 
     return Task(
-        description=description,  # Pass the formatted description with the extracted text
+        description=description,  
         agent=agent,
         expected_output=""" 
         :white_check_mark: **Generated Swagger YAML Includes:**
