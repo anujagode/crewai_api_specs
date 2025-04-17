@@ -65,7 +65,7 @@ def summarize(text, label):
     return response.choices[0].message.content.strip()
 
 
-def generate_explanations(prd, swagger_yaml, n=5):
+def generate_explanations(prd, swagger_yaml, n=3):
     explanations = []
     for _ in range(n):
         response = client.chat.completions.create(
