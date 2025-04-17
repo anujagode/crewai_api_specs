@@ -30,7 +30,7 @@ def extract_score_from_text(text):
             except:
                 continue
 
-    print(f"⚠️ Could not parse entailment score from: {text}")
+    print(f"Could not parse entailment score from: {text}")
     return 0.0
 
 
@@ -39,7 +39,7 @@ def extract_api_spec_section(prd_text):
     match = re.search(r"(?i)###?\s*API Specification\s*(.*?)\s*(###|$)", prd_text, re.DOTALL)
     if match:
         return match.group(1).strip()
-    print("⚠️ Could not find 'API Specification' section in PRD.")
+    print("Could not find 'API Specification' section in PRD.")
     return prd_text  # fallback to full PRD if section missing
 
 
@@ -126,7 +126,7 @@ Score the degree to which Summary B faithfully implements Summary A."""
     try:
         return extract_score_from_text(score_text)
     except:
-        print(f"⚠️ Could not parse entailment score from: {score_text}")
+        print(f"Could not parse entailment score from: {score_text}")
         return 0.0
 
 
@@ -140,15 +140,15 @@ def evaluate_stable_confidence(prd, swagger_yaml, n=3):
     summaries = []
     entailments = []
 
-    # 🔍 Focus only on the 'API Specification' section of PRD
+    # Focus only on the 'API Specification' section of PRD
     api_spec_text = extract_api_spec_section(prd)
 
-    # 📝 Summarize that focused API Specification content
-    print(f"\n📄 Extracted 'API Specification' section:\n{api_spec_text}\n")
+    # Summarize that focused API Specification content
+    print(f"\nExtracted 'API Specification' section:\n{api_spec_text}\n")
     prd_summary = summarize(api_spec_text, "PRD - API Specification")
-    print(f"\n📝 PRD Functional Summary:\n{prd_summary}\n")
+    print(f"\nPRD Functional Summary:\n{prd_summary}\n")
 
-    # 🔄 Loop to check consistency of entailment scoring
+    # Loop to check consistency of entailment scoring
     for i in range(n):
         swagger_summary = summarize(swagger_yaml, "Swagger YAML")
         summaries.append(swagger_summary)
