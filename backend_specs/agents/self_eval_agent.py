@@ -99,7 +99,7 @@ def generate_swagger_from_prd(file_path):
         print(f"Swagger file saved: {swagger_file_path}")
 
         # Stable Confidence Evaluation
-        print("\n🔍 Evaluating Stable Confidence...")
+        print("\nEvaluating Stable Confidence...")
         confidence_data = evaluate_stable_confidence(extracted_text, swagger_yaml, n=5)
 
         print(f"Confidence Score: {confidence_data['confidence_score']}")
